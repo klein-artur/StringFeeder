@@ -8,10 +8,13 @@
 import Foundation
 
 extension String {
-    var isValidParamName: Bool {
-        let allowedCharacterSet = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
+    var isValidParamNameByCharacters: Bool {
+        let allowedCharacterSet = Feeder.allowedCharacters
         let inputStringCharacterSet = CharacterSet(charactersIn: self)
 
         return allowedCharacterSet.isSuperset(of: inputStringCharacterSet)
+    }
+    var isValidParamNameByKey: Bool {
+        !Feeder.forbiddenKeywords.contains(self)
     }
 }

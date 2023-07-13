@@ -11,6 +11,11 @@ import Foundation
 class Feeder {
     
     static let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
+    static let forbiddenKeywords = [
+        "if"
+    ]
+    
+    private static let paramRegex = "(?!if)([a-zA-Z0-9_-]+)"
     
     enum Value {
         case string(String)
@@ -20,6 +25,7 @@ class Feeder {
     
     enum FeedingError: Error {
         case containsForbiddenCharacter(String)
+        case keyForbidden(String)
     }
     
     let parameterIndicator: String
@@ -52,7 +58,7 @@ class Feeder {
     private func feedParameters(parameters: [String: Value], into template: String) throws -> String {
         var result = template
         
-        let pattern = "\(regexablePatternIndicator)([a-zA-Z0-9_-]+)"
+        let pattern = regexablePatternIndicator + Self.paramRegex
         
         let regex = try NSRegularExpression(pattern: pattern, options: [])
         
@@ -85,8 +91,11 @@ class Feeder {
     
     private func checkForbiddenCharacters(parameters: [String: Value]) throws {
         for (key, _) in parameters {
-            if !key.isValidParamName {
+            if !key.isValidParamNameByCharacters {
                 throw FeedingError.containsForbiddenCharacter(key)
+            }
+            if !key.isValidParamNameByKey {
+                throw FeedingError.keyForbidden(key)
             }
         }
     }

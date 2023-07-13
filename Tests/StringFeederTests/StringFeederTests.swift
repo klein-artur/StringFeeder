@@ -38,6 +38,32 @@ final class StringFeederTests: XCTestCase {
         XCTFail("Should have thrown an error.")
     }
     
+    func testShouldThrowForbiddenKeyError() throws {
+        // given:
+        let parameters = [
+            "if": Feeder.Value.string("very cool string")
+        ]
+        
+        // when:
+        do {
+            _ = try sut.feed(parameters: parameters, into: "")
+        } catch {
+            // then
+            guard let error = error as? Feeder.FeedingError else {
+                XCTFail("Should have thrown Feeding Error.")
+                return
+            }
+            switch error {
+            case let .keyForbidden(field):
+                XCTAssertEqual(field, "if")
+            default: XCTFail("Wrong error thrown.")
+            }
+            return
+        }
+        
+        XCTFail("Should have thrown an error.")
+    }
+    
     func testSimpleStringFeed() throws {
         // given:
         let testString = "This is some $string_value."
