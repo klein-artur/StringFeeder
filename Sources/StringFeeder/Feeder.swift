@@ -22,15 +22,16 @@ public class Feeder {
     public static let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
     public static let forbiddenKeywords = [
         "ifSet",
-        "ifNotSet"
+        "ifNotSet",
+        "if"
     ]
     
     private static func paramRegex(indicator: String, name: String) -> String {
-        "(" + indicator + #"(?!ifSet)(?!ifNotSet)"# + name + #")(?:\([^)]*\))?"#
+        "(" + indicator + #"(?!ifSet)(?!ifNotSet)(?!if)"# + name + #")(?:\([^)]*\))?"#
     }
     
-    private static func ifSetRegex(indicator: String, set: Bool) -> String {
-        indicator + (set ? "ifSet" : "ifNotSet") + #"(?:\([^)]*\))?"#
+    private static func ifSetRegex(indicator: String, ifCase: String) -> String {
+        indicator + ifCase + #"(?:\([^)]*\))?"#
     }
     
     public enum Value {
@@ -104,8 +105,9 @@ public class Feeder {
     private func feedParameters(parameters: [Parameter], into template: String) throws -> String {
         var result = template
         
-        result = try checkForIfSet(parameters: parameters, into: result, set: true)
-        result = try checkForIfSet(parameters: parameters, into: result, set: false)
+        result = try checkForIfs(parameters: parameters, into: result, set: true)
+        result = try checkForIfs(parameters: parameters, into: result, set: false)
+        result = try checkForIfs(parameters: parameters, into: result, set: nil)
         
         for parameter in parameters {
             let paramName = parameter.name
@@ -138,17 +140,30 @@ public class Feeder {
         return result
     }
     
-    private func checkForIfSet(parameters: [Parameter], into template: String, set: Bool) throws -> String {
+    private func checkForIfs(parameters: [Parameter], into template: String, set: Bool?) throws -> String {
         var result = template
         
-        let pattern = Self.ifSetRegex(indicator: regexablePatternIndicator, set: set)
+        let ifCase: String
+        if let set {
+            ifCase = set ? "ifSet" : "ifNotSet"
+        } else {
+            ifCase = "if"
+        }
+        
+        let pattern = Self.ifSetRegex(indicator: regexablePatternIndicator, ifCase: ifCase)
         
         let regex = try NSRegularExpression(pattern: pattern, options: [])
         
         let matches = regex.matches(in: result, options: [], range: NSRange(location: 0, length: result.utf16.count))
         
-        for match in matches.reversed() { // reversed to prevent range problem
-            result.replaceSubrange(Range(match.range(at: 0), in: result)!, with: try self.handleIfSet(parameters: parameters, set: set, in: result))
+        for match in matches.reversed() {
+            let toReplace: String
+            if let set {
+                toReplace = try self.handleIfSet(parameters: parameters, set: set, in: result)
+            } else {
+                toReplace = try self.handleIf(parameters: parameters, in: result)
+            }
+            result.replaceSubrange(Range(match.range(at: 0), in: result)!, with: toReplace)
         }
         
         return result

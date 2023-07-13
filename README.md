@@ -26,10 +26,16 @@ The int value of this is 12, the boolean is correct and I just want to say Hello
 
 This placeholders are possible:
 
-```
-$some_var -> Will be replaced by the value of the variable. In case of bool it will be "true" or "false".
-$some_bool("true text"; "false text") -> Only for booleans. Will place "true text" or "false text" in the string.
-```
+- `$some_var`
+  Will be replaced by the value of the variable. In case of bool it will be "true" or "false".
+- `$some_bool("true text"; "false text")` 
+  Only for booleans. Will place "true text" or "false text" in the string.
+- `$ifSet(field_name; "result if set"; "result if not set")`
+  The syntax is `ifSet([fieldname]; [trueOutput]; [falseOutput])`. Will return the true output if the field is existent in the parameters.
+- `$ifNotSet(field_name; "result if not set"; "result if set")`
+  The syntax is `ifNotSet([fieldname]; [trueOutput]; [falseOutput])`. Will return the true output if the field is not existent in the parameters.
+- `$if(field_name; "result if not set"; "result if set")`
+  The syntax is `if([fieldname]; [trueOutput]; [falseOutput])`. This is for checking booleans. If the field is not a boolean the clause is considered als false. 
 
 ## How To
 
@@ -75,3 +81,5 @@ This boolean should be $some_bool(
     )"
 ).
 ```
+
+In an `if` clause you always have to provide both cases.

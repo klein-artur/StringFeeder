@@ -104,5 +104,53 @@ final class StringFeederIfSetUnsetTests: XCTestCase {
         // then
         XCTAssertEqual(result, "This string should not be set.")
     }
+    
+    func testBooleanIfTrue() throws {
+        // given
+        let params = [
+            Feeder.Parameter(name: "field_set", value: .boolean(true)),
+            Feeder.Parameter(name: "true_output", value: .string("is TrueMan")),
+            Feeder.Parameter(name: "false_output", value: .string("is FalseMan"))
+        ]
+        let testString = "This string $if(field_set; \"$true_output\"; \"$false_output\")."
+        
+        // when
+        let result = try sut.feed(parameters: params, into: testString)
+        
+        // then
+        XCTAssertEqual(result, "This string is TrueMan.")
+    }
+    
+    func testBooleanIfFalse() throws {
+        // given
+        let params = [
+            Feeder.Parameter(name: "field_set", value: .boolean(false)),
+            Feeder.Parameter(name: "true_output", value: .string("is TrueMan")),
+            Feeder.Parameter(name: "false_output", value: .string("is FalseMan"))
+        ]
+        let testString = "This string $if(field_set; \"$true_output\"; \"$false_output\")."
+        
+        // when
+        let result = try sut.feed(parameters: params, into: testString)
+        
+        // then
+        XCTAssertEqual(result, "This string is FalseMan.")
+    }
+    
+    func testBooleanButNoBoolean() throws {
+        // given
+        let params = [
+            Feeder.Parameter(name: "field_set", value: .string("false")),
+            Feeder.Parameter(name: "true_output", value: .string("is TrueMan")),
+            Feeder.Parameter(name: "false_output", value: .string("is FalseMan"))
+        ]
+        let testString = "This string $if(field_set; \"$true_output\"; \"$false_output\")."
+        
+        // when
+        let result = try sut.feed(parameters: params, into: testString)
+        
+        // then
+        XCTAssertEqual(result, "This string is FalseMan.")
+    }
 
 }
