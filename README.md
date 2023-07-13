@@ -61,3 +61,17 @@ Also nesting placeholders works:
 ```
 This is $some_bool("$some_other_bool("yes"; "no")": "no")
 ```
+
+You can also format your functions as wanted:
+```
+This boolean should be $some_bool(
+    "$some_true_value(
+        "ye\";
+        "no"
+    )";
+    "$some_other_bool(
+        "secondYes"; 
+        "secondNo"
+    )"
+).
+```

@@ -175,7 +175,10 @@ final class StringFeederBooleanTests: XCTestCase {
                     \"yes\";
                     \"no\"
                 )\";
-                \"$some_other_bool(\"secondYes\";\"secondNo\")\"
+                \"$some_other_bool(
+                    \"secondYes\";
+                    \"secondNo\"
+                )\"
             ).
         """
         let parameters = [
