@@ -15,7 +15,9 @@ class Feeder {
         "if"
     ]
     
-    private static let paramRegex = "(?!if)([a-zA-Z0-9_-]+)"
+    private static func paramRegex(indicator: String) -> String {
+        "(" + indicator + #"(?!if)([a-zA-Z0-9_-]+))(?:\(.*\))?"#
+    }
     
     enum Value {
         case string(String)
@@ -34,6 +36,15 @@ class Feeder {
         self.parameterIndicator = parameterIndicator
     }
     
+    private var placeholders: [String: (String, String)] {
+        [
+            "\u{FFFF}pi": ("\\\(parameterIndicator)", parameterIndicator),
+            "\u{FFFF}ob": ("\\(", "("),
+            "\u{FFFF}cb": ("\\)", ")"),
+            "\u{FFFF}dq": ("\\\"", "\"")
+        ]
+    }
+    
     func feed(parameters: [String: Value], into template: String) throws -> String {
         
         try checkForbiddenCharacters(parameters: parameters)
@@ -41,16 +52,15 @@ class Feeder {
         // Create a mutable copy of the string
         var result = template
         
-        // Handle escaped placeholders by replacing "$$" with a temporary placeholder
-        let escapedCommandPlaceholder = "\u{FFFF}"
-        // let escapedBrackedPlaceholder = "\u{FFFE}" // "\u{FFF0}""\u{0FFF}""\u{1FFF}"
-        
-        result = result.replacingOccurrences(of: "\\\(parameterIndicator)", with: escapedCommandPlaceholder)
+        result = placeholders.reduce(result, { (partialResult, content) in
+            partialResult.replacingOccurrences(of: content.value.0, with: content.key)
+        })
         
         result = try feedParameters(parameters: parameters, into: result)
         
-        // Replace the temporary placeholder with "$"
-        result = result.replacingOccurrences(of: escapedCommandPlaceholder, with: "\(parameterIndicator)")
+        result = placeholders.reduce(result, { (partialResult, content) in
+            partialResult.replacingOccurrences(of: content.key, with: content.value.1)
+        })
         
         return result
     }
@@ -58,14 +68,14 @@ class Feeder {
     private func feedParameters(parameters: [String: Value], into template: String) throws -> String {
         var result = template
         
-        let pattern = regexablePatternIndicator + Self.paramRegex
+        let pattern = Self.paramRegex(indicator: regexablePatternIndicator)
         
         let regex = try NSRegularExpression(pattern: pattern, options: [])
         
         let matches = regex.matches(in: result, options: [], range: NSRange(location: 0, length: result.utf16.count))
         
         for match in matches.reversed() { // reversed to prevent range problem
-            let paramNameRange = Range(match.range(at: 1), in: result)!
+            let paramNameRange = Range(match.range(at: 2), in: result)!
             let paramName = String(result[paramNameRange])
             
             guard let paramValue = parameters[paramName] else {
@@ -75,15 +85,17 @@ class Feeder {
             var replacement: String
             switch paramValue {
             case .string(let value):
-                replacement = value
+                result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: value)
             case .integer(let value):
-                replacement = String(value)
+                result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: String(value))
             case .boolean(let value):
-                replacement = String(value)
+                if let booleanResult = try handleBoolean(value: value, in: String(result[Range(match.range, in: result)!])) {
+                    result.replaceSubrange(Range(match.range, in: result)!, with: booleanResult)
+                } else {
+                    result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: String(value))
+                }
             }
-            
-            // Perform the replacement
-            result.replaceSubrange(Range(match.range, in: result)!, with: replacement)
+        
         }
         
         return result

@@ -138,5 +138,19 @@ final class StringFeederTests: XCTestCase {
         XCTAssertEqual(result, "This is some %int_value. It will also be here 5. And the string will be \"very cool string\"")
     }
     
+    func testSimpleStringWithBrackets_ShouldNotReplace() throws {
+        // given:
+        let testString = "This is some $string_value(\"with some\",\"nichts\"."
+        let parameters = [
+            "string_value": Feeder.Value.string("very cool string")
+        ]
+        
+        // when:
+        let result = try sut.feed(parameters: parameters, into: testString)
+        
+        // then:
+        XCTAssertEqual(result, "This is some very cool string(\"with some\",\"nichts\".")
+    }
+    
 }
 
