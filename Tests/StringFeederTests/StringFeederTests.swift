@@ -15,7 +15,7 @@ final class StringFeederTests: XCTestCase {
     func testShouldThrowForbiddenCharsError() throws {
         // given:
         let parameters = [
-            "string value": Feeder.Value.string("very cool string")
+            Feeder.Parameter(name: "string value", value: Feeder.Value.string("very cool string"))
         ]
         
         // when:
@@ -41,7 +41,7 @@ final class StringFeederTests: XCTestCase {
     func testShouldThrowForbiddenKeyError() throws {
         // given:
         let parameters = [
-            "ifSet": Feeder.Value.string("very cool string")
+            Feeder.Parameter(name: "ifSet", value: Feeder.Value.string("very cool string"))
         ]
         
         // when:
@@ -67,7 +67,7 @@ final class StringFeederTests: XCTestCase {
     func testShouldThrowForbiddenKeyIfNotSetError() throws {
         // given:
         let parameters = [
-            "ifNotSet": Feeder.Value.string("very cool string")
+            Feeder.Parameter(name: "ifNotSet", value: Feeder.Value.string("very cool string"))
         ]
         
         // when:
@@ -94,7 +94,7 @@ final class StringFeederTests: XCTestCase {
         // given:
         let testString = "This is some $string_value."
         let parameters = [
-            "string_value": Feeder.Value.string("very cool string")
+            Feeder.Parameter(name: "string_value", value: Feeder.Value.string("very cool string"))
         ]
         
         // when:
@@ -108,7 +108,7 @@ final class StringFeederTests: XCTestCase {
         // given:
         let testString = "This is some $int_value."
         let parameters = [
-            "int_value": Feeder.Value.integer(5)
+            Feeder.Parameter(name: "int_value", value: Feeder.Value.integer(5))
         ]
         
         // when:
@@ -122,8 +122,8 @@ final class StringFeederTests: XCTestCase {
         // given:
         let testString = "This is some $int_value. It will also be here $int_value. And the string will be \"$string_value\""
         let parameters = [
-            "int_value": Feeder.Value.integer(5),
-            "string_value": Feeder.Value.string("very cool string")
+            Feeder.Parameter(name: "int_value", value: Feeder.Value.integer(5)),
+            Feeder.Parameter(name: "string_value", value: Feeder.Value.string("very cool string"))
         ]
         
         // when:
@@ -137,8 +137,8 @@ final class StringFeederTests: XCTestCase {
         // given:
         let testString = "This is some \\$int_value. It will also be here $int_value. And the string will be \"$string_value\""
         let parameters = [
-            "int_value": Feeder.Value.integer(5),
-            "string_value": Feeder.Value.string("very cool string")
+            Feeder.Parameter(name: "int_value", value: Feeder.Value.integer(5)),
+            Feeder.Parameter(name: "string_value", value: Feeder.Value.string("very cool string"))
         ]
         
         // when:
@@ -153,8 +153,8 @@ final class StringFeederTests: XCTestCase {
         sut = Feeder(parameterIndicator: "%")
         let testString = "This is some \\%int_value. It will also be here %int_value. And the string will be \"%string_value\""
         let parameters = [
-            "int_value": Feeder.Value.integer(5),
-            "string_value": Feeder.Value.string("very cool string")
+            Feeder.Parameter(name: "int_value", value: Feeder.Value.integer(5)),
+            Feeder.Parameter(name: "string_value", value: Feeder.Value.string("very cool string"))
         ]
         
         // when:
@@ -168,7 +168,7 @@ final class StringFeederTests: XCTestCase {
         // given:
         let testString = "This is some $string_value(\"with some\",\"nichts\"."
         let parameters = [
-            "string_value": Feeder.Value.string("very cool string")
+            Feeder.Parameter(name: "string_value", value: Feeder.Value.string("very cool string"))
         ]
         
         // when:
@@ -176,6 +176,21 @@ final class StringFeederTests: XCTestCase {
         
         // then:
         XCTAssertEqual(result, "This is some very cool string(\"with some\",\"nichts\".")
+    }
+    
+    func testOnePlaceholderCreatesTheOtherOne() throws {
+        // given: x
+        let testString = "$test_two_params"
+        let parameters = [
+            Feeder.Parameter(name: "test_two", value: Feeder.Value.string("$new")),
+            Feeder.Parameter(name: "new_params", value: Feeder.Value.string("test"))
+        ]
+        
+        // when:
+        let result = try sut.feed(parameters: parameters, into: testString)
+        
+        // then:
+        XCTAssertEqual(result, "test")
     }
     
 }

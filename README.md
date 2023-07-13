@@ -41,9 +41,9 @@ import StringFeeder
 let feeder = Feeder() // or Feeder(parameterIndicator: "%") if you don't want to use "$" as the indicator.
 
 let params = [
-    "some_string": Feeder.Value.string("some string"),
-    "some-integer": Feeder.Value.integer(5),
-    "some_boolean": Feeder.Value.boolean(true)
+    Feeder.Parameter(name: "some_string", value: Feeder.Value.string("some string")),
+    Feeder.Parameter(name: "some-integer", value: Feeder.Value.integer(5)),
+    Feeder.Parameter(name: "some_boolean", value: Feeder.Value.boolean(true))
 ]
 
 let result = feeder.feed(parameters: params, into: userString)
@@ -52,10 +52,12 @@ let result = feeder.feed(parameters: params, into: userString)
 
 ## Some Rules
 
-Parameters are handled in the order they are provided. This way you can handle something like this:
-
+Combining placeholders is also possble, like this:
 ```
-This is some user string and the value is $some_bool("$true_string"; "$false_string")
+This is $some_bool("$true_string"; "$false_string")
 ```
 
-The only condition is that the parameters `true_string` and `false_string` are before `some_bool` in the provided parameter dictionary.
+Also nesting placeholders works:
+```
+This is $some_bool("$some_other_bool("yes"; "no")": "no")
+```

@@ -8,7 +8,7 @@
 import Foundation
 
 extension Feeder {
-    func handleBoolean(value: Bool, in template: String) throws -> String? {
+    func handleBoolean(parameters: [Parameter], value: Bool, in template: String) throws -> String? {
         let pattern = #"\("(.*)";\s*"(.*)"\)"#
         
         let regex = try NSRegularExpression(pattern: pattern, options: [])
@@ -19,9 +19,10 @@ extension Feeder {
             return nil
         }
         
-        let trueCondition = String(template[Range(match.range(at: 1), in: template)!])
-        let falseCondition = String(template[Range(match.range(at: 2), in: template)!])
-        
-        return value ? trueCondition : falseCondition
+        if value {
+            return try self.feed(parameters: parameters, into: String(template[Range(match.range(at: 1), in: template)!]))
+        } else {
+            return try self.feed(parameters: parameters, into: String(template[Range(match.range(at: 2), in: template)!]))
+        }
     }
 }

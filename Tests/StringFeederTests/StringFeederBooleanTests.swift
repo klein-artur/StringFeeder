@@ -23,7 +23,7 @@ final class StringFeederBooleanTests: XCTestCase {
         // given
         let string = "This boolean should be $some_bool."
         let parameters = [
-            "some_bool": Feeder.Value.boolean(true)
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(true))
         ]
         
         // when
@@ -37,7 +37,7 @@ final class StringFeederBooleanTests: XCTestCase {
         // given
         let string = "This boolean should be $some_bool(\"with wrong brackets\")."
         let parameters = [
-            "some_bool": Feeder.Value.boolean(true)
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(true))
         ]
         
         // when
@@ -51,7 +51,7 @@ final class StringFeederBooleanTests: XCTestCase {
         // given
         let string = "This boolean should be $some_bool(\"with correct brackets\"; \"with wrong brackets\")."
         let parameters = [
-            "some_bool": Feeder.Value.boolean(true)
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(true))
         ]
         
         // when
@@ -65,7 +65,7 @@ final class StringFeederBooleanTests: XCTestCase {
         // given
         let string = "This boolean should be $some_bool(\"with correct brackets\";\"with wrong brackets\")."
         let parameters = [
-            "some_bool": Feeder.Value.boolean(false)
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(false))
         ]
         
         // when
@@ -79,7 +79,7 @@ final class StringFeederBooleanTests: XCTestCase {
         // given
         let string = "This boolean should be $some_bool(\"with correct brackets\";\"with wrong \\(\\) brackets\")."
         let parameters = [
-            "some_bool": Feeder.Value.boolean(false)
+            Feeder.Parameter(name: "some_bool", value:  Feeder.Value.boolean(false))
         ]
         
         // when
@@ -93,7 +93,7 @@ final class StringFeederBooleanTests: XCTestCase {
         // given
         let string = "This boolean should be $some_bool(\"with correct brackets\";\"with wrong \\\" brackets\")."
         let parameters = [
-            "some_bool": Feeder.Value.boolean(false)
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(false))
         ]
         
         // when
@@ -107,9 +107,9 @@ final class StringFeederBooleanTests: XCTestCase {
         // given
         let string = "This boolean should be $some_bool(\"$some_true_string\";\"$some_wrong_string\")."
         let parameters = [
-            "some_true_string": Feeder.Value.string("is True"),
-            "some_wrong_string": Feeder.Value.string("is False"),
-            "some_bool": Feeder.Value.boolean(false)
+            Feeder.Parameter(name: "some_true_string", value: Feeder.Value.string("is True")),
+            Feeder.Parameter(name: "some_wrong_string", value: Feeder.Value.string("is False")),
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(false))
         ]
         
         // when
@@ -117,6 +117,54 @@ final class StringFeederBooleanTests: XCTestCase {
         
         // then
         XCTAssertEqual(result, "This boolean should be is False.")
+    }
+    
+    func testConditionalReplaceWithConditionWithParamDifferentOrder() throws {
+        // given
+        let string = "This boolean should be $some_bool(\"$some_true_string\";\"$some_wrong_string\")."
+        let parameters = [
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(false)),
+            Feeder.Parameter(name: "some_true_string", value: Feeder.Value.string("is True")),
+            Feeder.Parameter(name: "some_wrong_string", value: Feeder.Value.string("is False"))
+        ]
+        
+        // when
+        let result = try sut.feed(parameters: parameters, into: string)
+        
+        // then
+        XCTAssertEqual(result, "This boolean should be is False.")
+    }
+    
+    func testSomeComplexConditionReplacement() throws {
+        // given
+        let string = "This boolean should be $some_bool(\"$some_true_value(\"yes\";\"no\")\";\"$some_wrong_string\")."
+        let parameters = [
+            Feeder.Parameter(name: "some_true_value", value: Feeder.Value.boolean(true)),
+            Feeder.Parameter(name: "some_wrong_string", value: Feeder.Value.string("is False")),
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(false))
+        ]
+        
+        // when
+        let result = try sut.feed(parameters: parameters, into: string)
+        
+        // then
+        XCTAssertEqual(result, "This boolean should be is False.")
+    }
+    
+    func testSomeComplexConditionReplacementWithNestedParanteses() throws {
+        // given
+        let string = "This boolean should be $some_bool(\"$some_true_value(\"yes\";\"no\")\";\"$some_wrong_string\")."
+        let parameters = [
+            Feeder.Parameter(name: "some_true_value", value: Feeder.Value.boolean(true)),
+            Feeder.Parameter(name: "some_wrong_string", value: Feeder.Value.string("is False")),
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(true))
+        ]
+        
+        // when
+        let result = try sut.feed(parameters: parameters, into: string)
+        
+        // then
+        XCTAssertEqual(result, "This boolean should be yes.")
     }
 
 }
