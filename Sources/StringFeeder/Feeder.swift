@@ -7,8 +7,7 @@
 
 import Foundation
 
-
-class Feeder {
+public class Feeder {
     
     static let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
     static let forbiddenKeywords = [
@@ -19,7 +18,7 @@ class Feeder {
         "(" + indicator + #"(?!if)"# + name + #")(?:\(.*\))?"#
     }
     
-    enum Value {
+    public enum Value {
         case string(String)
         case boolean(Bool)
         case integer(Int)
@@ -32,7 +31,7 @@ class Feeder {
     
     let parameterIndicator: String
     
-    init(parameterIndicator: String = "$") {
+    public init(parameterIndicator: String = "$") {
         self.parameterIndicator = parameterIndicator
     }
     
@@ -45,7 +44,7 @@ class Feeder {
         ]
     }
     
-    func feed(parameters: [String: Value], into template: String) throws -> String {
+    public func feed(parameters: [String: Value], into template: String) throws -> String {
         
         try checkForbiddenCharacters(parameters: parameters)
         
