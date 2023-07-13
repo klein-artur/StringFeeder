@@ -29,6 +29,10 @@ public class Feeder {
         "(" + indicator + #"(?!ifSet)(?!ifNotSet)"# + name + #")(?:\([^)]*\))?"#
     }
     
+    private static func ifSetRegex(indicator: String, set: Bool) -> String {
+        indicator + (set ? "ifSet" : "ifNotSet") + #"(?:\([^)]*\))?"#
+    }
+    
     public enum Value {
         case string(String)
         case boolean(Bool)
@@ -100,6 +104,9 @@ public class Feeder {
     private func feedParameters(parameters: [Parameter], into template: String) throws -> String {
         var result = template
         
+        result = try checkForIfSet(parameters: parameters, into: result, set: true)
+        result = try checkForIfSet(parameters: parameters, into: result, set: false)
+        
         for parameter in parameters {
             let paramName = parameter.name
             let paramValue = parameter.value
@@ -126,6 +133,22 @@ public class Feeder {
                 }
             
             }
+        }
+        
+        return result
+    }
+    
+    private func checkForIfSet(parameters: [Parameter], into template: String, set: Bool) throws -> String {
+        var result = template
+        
+        let pattern = Self.ifSetRegex(indicator: regexablePatternIndicator, set: set)
+        
+        let regex = try NSRegularExpression(pattern: pattern, options: [])
+        
+        let matches = regex.matches(in: result, options: [], range: NSRange(location: 0, length: result.utf16.count))
+        
+        for match in matches.reversed() { // reversed to prevent range problem
+            result.replaceSubrange(Range(match.range(at: 0), in: result)!, with: try self.handleIfSet(parameters: parameters, set: set, in: result))
         }
         
         return result
