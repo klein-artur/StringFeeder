@@ -9,13 +9,14 @@ import Foundation
 
 public class Feeder {
     
-    static let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
-    static let forbiddenKeywords = [
-        "if"
+    public static let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
+    public static let forbiddenKeywords = [
+        "ifSet",
+        "ifNotSet"
     ]
     
     private static func paramRegex(indicator: String, name: String) -> String {
-        "(" + indicator + #"(?!if)"# + name + #")(?:\(.*\))?"#
+        "(" + indicator + #"(?!ifSet)(?!ifNotSet)"# + name + #")(?:\(.*\))?"#
     }
     
     public enum Value {
