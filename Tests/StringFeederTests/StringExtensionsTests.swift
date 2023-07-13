@@ -15,6 +15,8 @@ final class StringExtensionsTests: XCTestCase {
         let closePlaceholder = UUID().uuidString
         let indicator: Character = "$"
         let indicatorPlaceholder = UUID().uuidString
+        let doubleQuotesPlaceholder = UUID().uuidString
+        let semicolonPlaceholder = UUID().uuidString
         let testString = "test string (\(indicator)some(internal(parantheses)are)there) test (other(paranthesis(that(should)be)escaped)correctly) test"
         let resultString = "test string (\(indicatorPlaceholder)some\(openPlaceholder)internal\(openPlaceholder)parantheses\(closePlaceholder)are\(closePlaceholder)there) test (other\(openPlaceholder)paranthesis\(openPlaceholder)that\(openPlaceholder)should\(closePlaceholder)be\(closePlaceholder)escaped\(closePlaceholder)correctly) test"
         
@@ -23,6 +25,8 @@ final class StringExtensionsTests: XCTestCase {
             openPlaceholder: openPlaceholder,
             closePlaceholder: closePlaceholder,
             indicatorPlaceholder: indicatorPlaceholder,
+            doubleQuotesPlaceholder: doubleQuotesPlaceholder,
+            semicolonPlaceholder: semicolonPlaceholder,
             indicator: indicator
         )
         
@@ -36,6 +40,8 @@ final class StringExtensionsTests: XCTestCase {
         let closePlaceholder = UUID().uuidString
         let indicator: Character = "$"
         let indicatorPlaceholder = UUID().uuidString
+        let doubleQuotesPlaceholder = UUID().uuidString
+        let semicolonPlaceholder = UUID().uuidString
         let resultString = "test string (\(indicator)some(internal(parantheses)are)there) test (other(paranthesis(that(should)be)escaped)correctly) test"
         let testString = "test string (\(indicatorPlaceholder)some\(openPlaceholder)internal\(openPlaceholder)parantheses\(closePlaceholder)are\(closePlaceholder)there) test (other\(openPlaceholder)paranthesis\(openPlaceholder)that\(openPlaceholder)should\(closePlaceholder)be\(closePlaceholder)escaped\(closePlaceholder)correctly) test"
         
@@ -44,6 +50,8 @@ final class StringExtensionsTests: XCTestCase {
             openPlaceholder: openPlaceholder,
             closePlaceholder: closePlaceholder,
             indicatorPlaceholder: indicatorPlaceholder,
+            doubleQuotesPlaceholder: doubleQuotesPlaceholder,
+            semicolonPlaceholder: semicolonPlaceholder,
             indicator: indicator
         )
         

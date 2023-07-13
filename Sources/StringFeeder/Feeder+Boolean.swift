@@ -9,7 +9,7 @@ import Foundation
 
 extension Feeder {
     func handleBoolean(parameters: [Parameter], value: Bool, in template: String) throws -> String? {
-        let pattern = #"\("(.*)";\s*"(.*)"\)"#
+        let pattern = #"\(\s*"([^"]*)"\s*;\s*"([^"]*)"\s*\)"#
         
         let regex = try NSRegularExpression(pattern: pattern, options: [])
         
@@ -26,3 +26,5 @@ extension Feeder {
         }
     }
 }
+ 
+ 

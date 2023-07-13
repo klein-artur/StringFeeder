@@ -18,7 +18,14 @@ extension String {
         !Feeder.forbiddenKeywords.contains(self)
     }
     
-    func replaceNestedParentheses(openPlaceholder: String, closePlaceholder: String, indicatorPlaceholder: String, indicator: Character) -> String {
+    func replaceNestedParentheses(
+        openPlaceholder: String,
+        closePlaceholder: String,
+        indicatorPlaceholder: String,
+        doubleQuotesPlaceholder: String,
+        semicolonPlaceholder: String,
+        indicator: Character
+    ) -> String {
         var result = self
         var depth = 0
         var index = result.startIndex
@@ -43,6 +50,16 @@ extension String {
                     result.replaceSubrange(index...index, with: indicatorPlaceholder)
                     index = result.index(index, offsetBy: indicatorPlaceholder.count - 1) // "- 1" to offset for the removed ")"
                 }
+            case "\"":
+                if depth >= 2 {
+                    result.replaceSubrange(index...index, with: doubleQuotesPlaceholder)
+                    index = result.index(index, offsetBy: doubleQuotesPlaceholder.count - 1) // "- 1" to offset for the removed ")"
+                }
+            case ";":
+                if depth >= 2 {
+                    result.replaceSubrange(index...index, with: semicolonPlaceholder)
+                    index = result.index(index, offsetBy: semicolonPlaceholder.count - 1) // "- 1" to offset for the removed ")"
+                }
             default:
                 break
             }
@@ -52,11 +69,20 @@ extension String {
         return result
     }
     
-    func restoreNestedParentheses(openPlaceholder: String, closePlaceholder: String, indicatorPlaceholder: String, indicator: Character) -> String {
+    func restoreNestedParentheses(
+        openPlaceholder: String,
+        closePlaceholder: String,
+        indicatorPlaceholder: String,
+        doubleQuotesPlaceholder: String,
+        semicolonPlaceholder: String,
+        indicator: Character
+    ) -> String {
         var result = self
         result = result.replacingOccurrences(of: openPlaceholder, with: "(")
         result = result.replacingOccurrences(of: closePlaceholder, with: ")")
         result = result.replacingOccurrences(of: indicatorPlaceholder, with: String(indicator))
+        result = result.replacingOccurrences(of: doubleQuotesPlaceholder, with: String("\""))
+        result = result.replacingOccurrences(of: semicolonPlaceholder, with: String(";"))
         return result
     }
 

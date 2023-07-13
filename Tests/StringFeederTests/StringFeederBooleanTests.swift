@@ -166,5 +166,29 @@ final class StringFeederBooleanTests: XCTestCase {
         // then
         XCTAssertEqual(result, "This boolean should be yes.")
     }
+    
+    func testSomeComplexConditionReplacementWithNestedParantesesLineBreaks() throws {
+        // given
+        let string = """
+            This boolean should be $some_bool(
+                \"$some_true_value(
+                    \"yes\";
+                    \"no\"
+                )\";
+                \"$some_other_bool(\"secondYes\";\"secondNo\")\"
+            ).
+        """
+        let parameters = [
+            Feeder.Parameter(name: "some_true_value", value: Feeder.Value.boolean(true)),
+            Feeder.Parameter(name: "some_other_bool", value: Feeder.Value.boolean(false)),
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(true))
+        ]
+        
+        // when
+        let result = try sut.feed(parameters: parameters, into: string)
+        
+        // then
+        XCTAssertEqual(result, "    This boolean should be yes.")
+    }
 
 }

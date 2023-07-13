@@ -26,7 +26,7 @@ public class Feeder {
     ]
     
     private static func paramRegex(indicator: String, name: String) -> String {
-        "(" + indicator + #"(?!ifSet)(?!ifNotSet)"# + name + #")(?:\(.*\))?"#
+        "(" + indicator + #"(?!ifSet)(?!ifNotSet)"# + name + #")(?:\([^)]*\))?"#
     }
     
     public enum Value {
@@ -49,6 +49,8 @@ public class Feeder {
     private let nestedOpenParantesesPlaceholder = UUID().uuidString
     private let nestedCloseParantesesPlaceholder = UUID().uuidString
     private let nestedParantesesIndicatorPlaceholder = UUID().uuidString
+    private let doubleQuotesPlaceholder = UUID().uuidString
+    private let semicolonPlaceholder = UUID().uuidString
     
     private lazy var placeholders: [String: (String, String)] = {
         [
@@ -66,6 +68,8 @@ public class Feeder {
             openPlaceholder: nestedOpenParantesesPlaceholder,
             closePlaceholder: nestedCloseParantesesPlaceholder,
             indicatorPlaceholder: nestedParantesesIndicatorPlaceholder,
+            doubleQuotesPlaceholder: doubleQuotesPlaceholder,
+            semicolonPlaceholder: semicolonPlaceholder,
             indicator: self.parameterIndicator
         )
         
@@ -79,6 +83,8 @@ public class Feeder {
             openPlaceholder: nestedOpenParantesesPlaceholder,
             closePlaceholder: nestedCloseParantesesPlaceholder,
             indicatorPlaceholder: nestedParantesesIndicatorPlaceholder,
+            doubleQuotesPlaceholder: doubleQuotesPlaceholder,
+            semicolonPlaceholder: semicolonPlaceholder,
             indicator: self.parameterIndicator
         )
         
