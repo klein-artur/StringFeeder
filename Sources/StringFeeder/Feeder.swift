@@ -15,8 +15,8 @@ class Feeder {
         "if"
     ]
     
-    private static func paramRegex(indicator: String) -> String {
-        "(" + indicator + #"(?!if)([a-zA-Z0-9_-]+))(?:\(.*\))?"#
+    private static func paramRegex(indicator: String, name: String) -> String {
+        "(" + indicator + #"(?!if)"# + name + #")(?:\(.*\))?"#
     }
     
     enum Value {
@@ -68,34 +68,34 @@ class Feeder {
     private func feedParameters(parameters: [String: Value], into template: String) throws -> String {
         var result = template
         
-        let pattern = Self.paramRegex(indicator: regexablePatternIndicator)
-        
-        let regex = try NSRegularExpression(pattern: pattern, options: [])
-        
-        let matches = regex.matches(in: result, options: [], range: NSRange(location: 0, length: result.utf16.count))
-        
-        for match in matches.reversed() { // reversed to prevent range problem
-            let paramNameRange = Range(match.range(at: 2), in: result)!
-            let paramName = String(result[paramNameRange])
+        for (paramName, paramValue) in parameters {
+            let pattern = Self.paramRegex(indicator: regexablePatternIndicator, name: paramName)
             
-            guard let paramValue = parameters[paramName] else {
-                continue
-            }
+            let regex = try NSRegularExpression(pattern: pattern, options: [])
             
-            var replacement: String
-            switch paramValue {
-            case .string(let value):
-                result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: value)
-            case .integer(let value):
-                result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: String(value))
-            case .boolean(let value):
-                if let booleanResult = try handleBoolean(value: value, in: String(result[Range(match.range, in: result)!])) {
-                    result.replaceSubrange(Range(match.range, in: result)!, with: booleanResult)
-                } else {
-                    result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: String(value))
+            let matches = regex.matches(in: result, options: [], range: NSRange(location: 0, length: result.utf16.count))
+            
+            for match in matches.reversed() { // reversed to prevent range problem
+                
+                guard let paramValue = parameters[paramName] else {
+                    continue
                 }
+                
+                var replacement: String
+                switch paramValue {
+                case .string(let value):
+                    result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: value)
+                case .integer(let value):
+                    result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: String(value))
+                case .boolean(let value):
+                    if let booleanResult = try handleBoolean(value: value, in: String(result[Range(match.range, in: result)!])) {
+                        result.replaceSubrange(Range(match.range, in: result)!, with: booleanResult)
+                    } else {
+                        result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: String(value))
+                    }
+                }
+            
             }
-        
         }
         
         return result

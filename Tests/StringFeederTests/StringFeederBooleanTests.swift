@@ -102,5 +102,21 @@ final class StringFeederBooleanTests: XCTestCase {
         // then
         XCTAssertEqual(result, "This boolean should be with wrong \" brackets.")
     }
+    
+    func testConditionalReplaceWithConditionWithParam() throws {
+        // given
+        let string = "This boolean should be $some_bool(\"$some_true_string\";\"$some_wrong_string\")."
+        let parameters = [
+            "some_true_string": Feeder.Value.string("is True"),
+            "some_wrong_string": Feeder.Value.string("is False"),
+            "some_bool": Feeder.Value.boolean(false)
+        ]
+        
+        // when
+        let result = try sut.feed(parameters: parameters, into: string)
+        
+        // then
+        XCTAssertEqual(result, "This boolean should be is False.")
+    }
 
 }
