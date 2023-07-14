@@ -38,6 +38,7 @@ public class Feeder {
         case string(String)
         case boolean(Bool)
         case integer(Int)
+        case converter((String) throws -> String)
     }
     
     public enum FeedingError: Error {
@@ -128,11 +129,16 @@ public class Feeder {
             for match in matches.reversed() { // reversed to prevent range problem
                 
                 switch paramValue {
-                case .string(let value):
+                case let .string(value):
                     result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: value)
-                case .integer(let value):
+                case let .integer(value):
                     result.replaceSubrange(Range(match.range(at: 1), in: result)!, with: String(value))
-                case .boolean(let value):
+                case let .converter(function):
+                    result.replaceSubrange(
+                        Range(match.range, in: result)!,
+                        with: try handleFunction(parameters: parameters, function: function, in: String(result[Range(match.range, in: result)!]))
+                    )
+                case let .boolean(value):
                     if let booleanResult = try handleBoolean(parameters: parameters, value: value, in: String(result[Range(match.range, in: result)!])) {
                         result.replaceSubrange(Range(match.range, in: result)!, with: booleanResult)
                     } else {

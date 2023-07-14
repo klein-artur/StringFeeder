@@ -9,6 +9,7 @@ For example your app can provide this parameters:
 some_int: 12
 some_boolean: true
 some_string: "Hello World"
+some_converter: { (inputString) throws -> String in }
 ```
 
 Now the user can define a string entangling this placeholders like this for example:
@@ -30,6 +31,8 @@ This placeholders are possible:
   Will be replaced by the value of the variable. In case of bool it will be "true" or "false".
 - `$some_bool("true text"; "false text")` 
   Only for booleans. Will place "true text" or "false text" in the string.
+- `$some_converter("converter input")`
+  Converters can be seen as functions that are injected into the string by a logic passed to the feeder.
 - `$ifSet(field_name; "result if set"; "result if not set")`
   The syntax is `ifSet([fieldname]; [trueOutput]; [falseOutput])`. Will return the true output if the field is existent in the parameters.
 - `$ifNotSet(field_name; "result if not set"; "result if set")`
@@ -49,9 +52,20 @@ import StringFeeder
 let feeder = Feeder() // or Feeder(parameterIndicator: .percent) if you don't want to use "$" as the indicator.
 
 let params = [
+
+    // A string value.
     Feeder.Parameter(name: "some_string", value: Feeder.Value.string("some string")),
+    
+    // An integer value.
     Feeder.Parameter(name: "some-integer", value: Feeder.Value.integer(5)),
+    
+    // A boolean value.
     Feeder.Parameter(name: "some_boolean", value: Feeder.Value.boolean(true))
+    
+    // A converter.
+    Feeder.Parameter(name: "some_converter", value Feeder.Value.converter({ origString in 
+        return doWhateverNeeded(to: origString)
+    ))
 ]
 
 let result = feeder.feed(parameters: params, into: userString)
@@ -94,7 +108,7 @@ In an `if` and `bool` clause you always have to provide both cases. Otherwise it
 
 ## Examples:
 
-An example template could be this:
+### Filling an email template:
 
 ```
 Dear $name,
@@ -107,4 +121,29 @@ Your Customer Support
 $should_show_ad(" # will show an add if should show add is set to true.
 Have you heard about our new product?
 "; "")
+
+parameters: [
+    Feeder.Parameter(name: "name", value: .string("John Doe")),
+    Feeder.Parameter(name: "order_number", value: .integer(12345654321)),
+    Feeder.Parameter(name: "should_show_ad", value: .boolean(true))
+]
+
+```
+
+### Filling a url template:
+
+```
+https://some.api.com/api/v$version/users/$user_id/items/?searchstring=$url_encoded("$search_string")
+
+let params = [
+    Feeder.Parameter(name: "version", value: .integer(3)),
+    Feeder.Parameter(name: "user_id", value: .string("someUserId")),
+    Feeder.Parameter(name: "search_string", value: .string("Bücher")),
+    Feeder.Parameter(name: "url_encoded", value: .converter({ value in 
+        guard let encoded = value.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed) else {
+            throw SomeError()
+        }
+        return encoded
+    })
+]
 ```

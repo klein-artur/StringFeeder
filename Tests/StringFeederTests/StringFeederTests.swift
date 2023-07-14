@@ -104,6 +104,57 @@ final class StringFeederTests: XCTestCase {
         XCTAssertEqual(result, "This is some very cool string.")
     }
     
+    func testSimpleStringFeedWithConverter() throws {
+        // given:
+        let testString = "This is some $converter(\"$string_value\")."
+        let parameters = [
+            Feeder.Parameter(name: "string_value", value: Feeder.Value.string("very cool string")),
+            Feeder.Parameter(name: "converter", value: Feeder.Value.converter({ theString in
+                return theString == "very cool string" ? "changed" : "not changed"
+            }))
+        ]
+        
+        // when:
+        let result = try sut.feed(parameters: parameters, into: testString)
+        
+        // then:
+        XCTAssertEqual(result, "This is some changed.")
+    }
+    
+    func testSimpleStringFeedWithConverterButWrongBrackets() throws {
+        // given:
+        let testString = "This is some $converter(\"$string_value\";\"other string value\")."
+        let parameters = [
+            Feeder.Parameter(name: "string_value", value: Feeder.Value.string("very cool string")),
+            Feeder.Parameter(name: "converter", value: Feeder.Value.converter({ theString in
+                return theString == "very cool string" ? "changed" : "not changed"
+            }))
+        ]
+        
+        // when:
+        let result = try sut.feed(parameters: parameters, into: testString)
+        
+        // then:
+        XCTAssertEqual(result, "This is some $converter(\"very cool string\";\"other string value\").")
+    }
+    
+    func testSimpleStringFeedWithConverterWithoutQuotes() throws {
+        // given:
+        let testString = "This is some $converter($string_value)."
+        let parameters = [
+            Feeder.Parameter(name: "string_value", value: Feeder.Value.string("very cool string")),
+            Feeder.Parameter(name: "converter", value: Feeder.Value.converter({ theString in
+                return theString == "very cool string" ? "changed" : "not changed"
+            }))
+        ]
+        
+        // when:
+        let result = try sut.feed(parameters: parameters, into: testString)
+        
+        // then:
+        XCTAssertEqual(result, "This is some changed.")
+    }
+    
     func testSimpleIntegerFeed() throws {
         // given:
         let testString = "This is some $int_value."
