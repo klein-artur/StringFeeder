@@ -150,7 +150,7 @@ final class StringFeederTests: XCTestCase {
     
     func testDifferentIndicator() throws {
         // given:
-        sut = Feeder(parameterIndicator: "%")
+        sut = Feeder(parameterIndicator: .percent)
         let testString = "This is some \\%int_value. It will also be here %int_value. And the string will be \"%string_value\""
         let parameters = [
             Feeder.Parameter(name: "int_value", value: Feeder.Value.integer(5)),

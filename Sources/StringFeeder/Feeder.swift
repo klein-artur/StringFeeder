@@ -40,15 +40,20 @@ public class Feeder {
         case integer(Int)
     }
     
-    enum FeedingError: Error {
+    public enum FeedingError: Error {
         case containsForbiddenCharacter(String)
         case keyForbidden(String)
     }
     
+    public enum Indicator: Character {
+        case dollar = "$"
+        case percent = "%"
+    }
+    
     let parameterIndicator: Character
     
-    public init(parameterIndicator: Character = "$") {
-        self.parameterIndicator = parameterIndicator
+    public init(parameterIndicator: Indicator = .dollar) {
+        self.parameterIndicator = parameterIndicator.rawValue
     }
     
     private let nestedOpenParantesesPlaceholder = UUID().uuidString
@@ -63,6 +68,7 @@ public class Feeder {
             UUID().uuidString: ("\\\(parameterIndicator)", String(parameterIndicator)),
             UUID().uuidString: ("\\(", "("),
             UUID().uuidString: ("\\)", ")"),
+            UUID().uuidString: ("\\;", ";"),
             UUID().uuidString: ("\\\"", "\"")
         ]
     }()
@@ -182,7 +188,7 @@ public class Feeder {
     
     private var regexablePatternIndicator: String {
         // Check if patternIndicator is a special character that needs escaping
-        let specialCharacters = ["$", "(", ")", "{", "}", "[", "]", "^", "$", ".", "|", "?", "*", "+", "\\"]
+        let specialCharacters = ["$"]
         if specialCharacters.contains(String(parameterIndicator)) {
             return "\\\(parameterIndicator)"
         } else {

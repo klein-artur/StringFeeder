@@ -63,7 +63,7 @@ final class StringFeederBooleanTests: XCTestCase {
     
     func testConditionalReplaceWithCorrectBracketswithoutSpace() throws {
         // given
-        let string = "This boolean should be $some_bool(\"with correct brackets\";\"with wrong brackets\")."
+        let string = "This boolean should be $some_bool(\"with correct brackets\";\"with wrong \\\" brackets\")."
         let parameters = [
             Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(false))
         ]
@@ -72,7 +72,7 @@ final class StringFeederBooleanTests: XCTestCase {
         let result = try sut.feed(parameters: parameters, into: string)
         
         // then
-        XCTAssertEqual(result, "This boolean should be with wrong brackets.")
+        XCTAssertEqual(result, "This boolean should be with wrong \" brackets.")
     }
     
     func testConditionalReplaceWithBracketInCondition() throws {
@@ -153,7 +153,7 @@ final class StringFeederBooleanTests: XCTestCase {
     
     func testSomeComplexConditionReplacementWithNestedParanteses() throws {
         // given
-        let string = "This boolean should be $some_bool(\"$some_true_value(\"yes\";\"no\")\";\"$some_wrong_string\")."
+        let string = "This boolean should be $some_bool(\"$some_true_value(yes;\"no\")\";\"$some_wrong_string\")."
         let parameters = [
             Feeder.Parameter(name: "some_true_value", value: Feeder.Value.boolean(true)),
             Feeder.Parameter(name: "some_wrong_string", value: Feeder.Value.string("is False")),
@@ -175,10 +175,10 @@ final class StringFeederBooleanTests: XCTestCase {
                     \"yes\";
                     \"no\"
                 )\";
-                \"$some_other_bool(
+                $some_other_bool(
                     \"secondYes\";
                     \"secondNo\"
-                )\"
+                )
             ).
         """
         let parameters = [

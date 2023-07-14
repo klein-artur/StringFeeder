@@ -8,10 +8,10 @@
 import Foundation
 
 extension Feeder {
+    private static let ifClausePattern = #"\(\s*([a-zA-Z0-9-_]+)\s*;\s*"?([^"]*)"?\s*;\s*"?([^"]*)"?\s*\)"#
+    
     func handleIfSet(parameters: [Parameter], set: Bool, in template: String) throws -> String {
-        let pattern = #"\(\s*([a-zA-Z0-9-_]+)\s*;\s*"([^"]*)"\s*;\s*"([^"]*)"\s*\)"#
-        
-        let regex = try NSRegularExpression(pattern: pattern, options: [])
+        let regex = try NSRegularExpression(pattern: Self.ifClausePattern, options: [])
         
         let matches = regex.matches(in: template, options: [], range: NSRange(location: 0, length: template.utf16.count))
         
@@ -30,9 +30,7 @@ extension Feeder {
     }
     
     func handleIf(parameters: [Parameter], in template: String) throws -> String {
-        let pattern = #"\(\s*([a-zA-Z0-9-_]+)\s*;\s*"([^"]*)"\s*;\s*"([^"]*)"\s*\)"#
-        
-        let regex = try NSRegularExpression(pattern: pattern, options: [])
+        let regex = try NSRegularExpression(pattern: Self.ifClausePattern, options: [])
         
         let matches = regex.matches(in: template, options: [], range: NSRange(location: 0, length: template.utf16.count))
         
