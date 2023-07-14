@@ -218,6 +218,21 @@ final class StringFeederTests: XCTestCase {
         XCTAssertEqual(result, "Test(string(with(some ( nested \n ) brackets ) that ) should )) be ) in ) the ) ignored")
     }
     
+    func testSomeGoodExample() throws {
+        // given
+        let testString = "Dear $name,\n\nwe just want to inform you that your order $ifSet(order_number; \"with order number $order_number \"; \")was shipped to your address.\n\nPlease consider checking it upon arrival.\n\nYour Customer Support\n$should_show_ad(\"# will show an add if should show add is set to true.\nHave you heard about our new product?\n\"; \"\")"
+        
+        // when
+        let result = try sut.feed(parameters: [
+            Feeder.Parameter(name: "name", value: .string("John Doe")),
+            Feeder.Parameter(name: "order_number", value: .integer(12345654321)),
+            Feeder.Parameter(name: "should_show_ad", value: .boolean(true))
+        ], into: testString)
+        
+        // then
+        XCTAssertEqual(result, "Dear John Doe,\n\nwe just want to inform you that your order with order number 12345654321 was shipped to your address.\n\nPlease consider checking it upon arrival.\n\nYour Customer Support\n\nHave you heard about our new product?\n")
+    }
+    
     func testWithALongString() {
         // given
         let params: [Feeder.Parameter] = [

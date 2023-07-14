@@ -92,3 +92,19 @@ Test String$test_bool( Ja; Nein).           # Will result in "Test StringJa."
 
 In an `if` and `bool` clause you always have to provide both cases. Otherwise it's not recognized.
 
+## Examples:
+
+An example template could be this:
+
+```
+Dear $name,
+
+we just want to inform you that your order $ifSet(order_number; "with order number $order_number "; ")was shipped to your address.
+
+Please consider checking it upon arrival.
+
+Your Customer Support
+$should_show_ad(" # will show an add if should show add is set to true.
+Have you heard about our new product?
+"; "")
+```
