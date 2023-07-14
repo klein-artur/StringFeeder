@@ -33,6 +33,20 @@ final class StringFeederIfSetUnsetTests: XCTestCase {
         XCTAssertEqual(result, "This string is set.")
     }
     
+    func testIfSetButWrongBrackets() throws {
+        // given
+        let params = [
+            Feeder.Parameter(name: "field_set", value: .string("is set"))
+        ]
+        let testString = "This string $ifSet(field_set; \"$field_set\")."
+        
+        // when
+        let result = try sut.feed(parameters: params, into: testString)
+        
+        // then
+        XCTAssertEqual(result, "This string $ifSet(field_set; \"is set\").")
+    }
+    
     func testIfSetAndUnset() throws {
         // given
         let params = [
@@ -151,6 +165,20 @@ final class StringFeederIfSetUnsetTests: XCTestCase {
         
         // then
         XCTAssertEqual(result, "This string is FalseMan.")
+    }
+    
+    func testIfButWrongBrackets() throws {
+        // given
+        let params = [
+            Feeder.Parameter(name: "field_set", value: .string("is set"))
+        ]
+        let testString = "This string $if(field_set; \"$field_set\")."
+        
+        // when
+        let result = try sut.feed(parameters: params, into: testString)
+        
+        // then
+        XCTAssertEqual(result, "This string $if(field_set; \"is set\").")
     }
 
 }

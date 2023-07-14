@@ -20,9 +20,9 @@ extension Feeder {
         }
         
         if value {
-            return try self.feed(parameters: parameters, into: String(template[Range(match.range(at: 1), in: template)!]))
+            return try self.recursiveFeed(parameters: parameters, into: String(template[Range(match.range(at: 1), in: template)!]))
         } else {
-            return try self.feed(parameters: parameters, into: String(template[Range(match.range(at: 2), in: template)!]))
+            return try self.recursiveFeed(parameters: parameters, into: String(template[Range(match.range(at: 2), in: template)!]))
         }
     }
 }

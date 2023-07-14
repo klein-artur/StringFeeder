@@ -1,0 +1,32 @@
+{
+  "configurations" : [
+    {
+      "id" : "C06CF948-ADE9-471F-BBE7-1FDF0D9307C4",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "StringFeeder",
+          "name" : "StringFeeder"
+        }
+      ]
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "StringFeederTests",
+        "name" : "StringFeederTests"
+      }
+    }
+  ],
+  "version" : 1
+}

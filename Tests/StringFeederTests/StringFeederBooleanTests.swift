@@ -193,5 +193,21 @@ final class StringFeederBooleanTests: XCTestCase {
         // then
         XCTAssertEqual(result, "    This boolean should be yes.")
     }
+    
+    func testConditionalReplaceWithConditionWithWrongBool() throws {
+        // given
+        let string = "This boolean should be $some_bool(\"$some_true_string\")."
+        let parameters = [
+            Feeder.Parameter(name: "some_bool", value: Feeder.Value.boolean(false)),
+            Feeder.Parameter(name: "some_true_string", value: Feeder.Value.string("is True")),
+            Feeder.Parameter(name: "some_wrong_string", value: Feeder.Value.string("is False"))
+        ]
+        
+        // when
+        let result = try sut.feed(parameters: parameters, into: string)
+        
+        // then
+        XCTAssertEqual(result, "This boolean should be false(\"is True\").")
+    }
 
 }

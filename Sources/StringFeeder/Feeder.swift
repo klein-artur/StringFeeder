@@ -52,15 +52,19 @@ public class Feeder {
     
     let parameterIndicator: Character
     
+    private var deepness: Int = 0
+    
     public init(parameterIndicator: Indicator = .dollar) {
         self.parameterIndicator = parameterIndicator.rawValue
     }
     
-    private let nestedOpenParantesesPlaceholder = UUID().uuidString
-    private let nestedCloseParantesesPlaceholder = UUID().uuidString
-    private let nestedParantesesIndicatorPlaceholder = UUID().uuidString
-    private let doubleQuotesPlaceholder = UUID().uuidString
-    private let semicolonPlaceholder = UUID().uuidString
+    let nestedOpenParantesesPlaceholder = UUID().uuidString
+    let nestedCloseParantesesPlaceholder = UUID().uuidString
+    let nestedParantesesIndicatorPlaceholder = UUID().uuidString
+    let doubleQuotesPlaceholder = UUID().uuidString
+    let semicolonPlaceholder = UUID().uuidString
+    
+    private let commentHashtagPlaceholder = UUID().uuidString
     
     private lazy var placeholders: [String: (String, String)] = {
         [
@@ -74,15 +78,14 @@ public class Feeder {
     }()
     
     public func feed(parameters: [Parameter], into template: String) throws -> String {
+        return try recursiveFeed(parameters: parameters, into: template)
+    }
+    
+    func recursiveFeed(parameters: [Parameter], into template: String) throws -> String {
+
+        var result = ruleOutComments(template: template)
         
-        var result = template.restoreNestedParentheses(
-            openPlaceholder: nestedOpenParantesesPlaceholder,
-            closePlaceholder: nestedCloseParantesesPlaceholder,
-            indicatorPlaceholder: nestedParantesesIndicatorPlaceholder,
-            doubleQuotesPlaceholder: doubleQuotesPlaceholder,
-            semicolonPlaceholder: semicolonPlaceholder,
-            indicator: self.parameterIndicator
-        )
+        result = self.restoreNestedParentheses(template: result)
         
         try checkForbiddenCharacters(parameters: parameters)
         
@@ -90,16 +93,13 @@ public class Feeder {
             partialResult.replacingOccurrences(of: content.value.0, with: content.key)
         })
         
-        result = result.replaceNestedParentheses(
-            openPlaceholder: nestedOpenParantesesPlaceholder,
-            closePlaceholder: nestedCloseParantesesPlaceholder,
-            indicatorPlaceholder: nestedParantesesIndicatorPlaceholder,
-            doubleQuotesPlaceholder: doubleQuotesPlaceholder,
-            semicolonPlaceholder: semicolonPlaceholder,
-            indicator: self.parameterIndicator
-        )
+        result = self.replaceNestedParentheses(template: result)
         
         result = try feedParameters(parameters: parameters, into: result)
+        
+        result = try handleParantheses(parameters: parameters, in: result)
+        
+        result = self.restoreNestedParentheses(template: result)
         
         result = placeholders.reduce(result, { (partialResult, content) in
             partialResult.replacingOccurrences(of: content.key, with: content.value.1)
@@ -163,11 +163,12 @@ public class Feeder {
         let matches = regex.matches(in: result, options: [], range: NSRange(location: 0, length: result.utf16.count))
         
         for match in matches.reversed() {
+            let ifClause = String(result[Range(match.range, in: result)!])
             let toReplace: String
             if let set {
-                toReplace = try self.handleIfSet(parameters: parameters, set: set, in: result)
+                toReplace = try self.handleIfSet(parameters: parameters, set: set, in: ifClause)
             } else {
-                toReplace = try self.handleIf(parameters: parameters, in: result)
+                toReplace = try self.handleIf(parameters: parameters, in: ifClause)
             }
             result.replaceSubrange(Range(match.range(at: 0), in: result)!, with: toReplace)
         }
@@ -184,6 +185,64 @@ public class Feeder {
                 throw FeedingError.keyForbidden(parameter.name)
             }
         }
+    }
+    
+    private func replaceNestedParentheses(
+        template: String
+    ) -> String {
+        var result = template
+        var depth = 0
+        var index = result.startIndex
+
+        while index < result.endIndex {
+            let character = result[index]
+            switch character {
+            case "(":
+                depth += 1
+                if depth >= 2 {
+                    result.replaceSubrange(index...index, with: nestedOpenParantesesPlaceholder)
+                    index = result.index(index, offsetBy: nestedOpenParantesesPlaceholder.count - 1) // "- 1" to offset for the removed "("
+                }
+            case ")":
+                if depth >= 2 {
+                    result.replaceSubrange(index...index, with: nestedCloseParantesesPlaceholder)
+                    index = result.index(index, offsetBy: nestedCloseParantesesPlaceholder.count - 1) // "- 1" to offset for the removed ")"
+                }
+                depth -= 1
+            case parameterIndicator:
+                if depth >= 1 {
+                    result.replaceSubrange(index...index, with: nestedParantesesIndicatorPlaceholder)
+                    index = result.index(index, offsetBy: nestedParantesesIndicatorPlaceholder.count - 1) // "- 1" to offset for the removed ")"
+                }
+            case "\"":
+                if depth >= 2 {
+                    result.replaceSubrange(index...index, with: doubleQuotesPlaceholder)
+                    index = result.index(index, offsetBy: doubleQuotesPlaceholder.count - 1) // "- 1" to offset for the removed ")"
+                }
+            case ";":
+                if depth >= 2 {
+                    result.replaceSubrange(index...index, with: semicolonPlaceholder)
+                    index = result.index(index, offsetBy: semicolonPlaceholder.count - 1) // "- 1" to offset for the removed ")"
+                }
+            default:
+                break
+            }
+            index = result.index(after: index)
+        }
+
+        return result
+    }
+    
+    private func restoreNestedParentheses(
+        template: String
+    ) -> String {
+        var result = template
+        result = result.replacingOccurrences(of: nestedOpenParantesesPlaceholder, with: "(")
+        result = result.replacingOccurrences(of: nestedCloseParantesesPlaceholder, with: ")")
+        result = result.replacingOccurrences(of: nestedParantesesIndicatorPlaceholder, with: String(parameterIndicator))
+        result = result.replacingOccurrences(of: doubleQuotesPlaceholder, with: String("\""))
+        result = result.replacingOccurrences(of: semicolonPlaceholder, with: String(";"))
+        return result
     }
     
     private var regexablePatternIndicator: String {

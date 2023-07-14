@@ -36,6 +36,8 @@ This placeholders are possible:
   The syntax is `ifNotSet([fieldname]; [trueOutput]; [falseOutput])`. Will return the true output if the field is not existent in the parameters.
 - `$if(field_name; "result if not set"; "result if set")`
   The syntax is `if([fieldname]; [trueOutput]; [falseOutput])`. This is for checking booleans. If the field is not a boolean the clause is considered als false. 
+- Comments: A `#` will comment for the rest of the line. or you can end the comment with `#` again. Comments cannot contain multiple lines. Comments will not end in the final string.
+- Escaping: You can escape characters by placing a backslash before them. So for example `\$some_var` will end in the string as `$some_var` and will not be recognized as a placeholder and `\#` will not indicate a comment but rather end up as `#` in the string.
 
 ## How To
 
@@ -44,7 +46,7 @@ It's very simple:
 ```swift 
 import StringFeeder
 
-let feeder = Feeder() // or Feeder(parameterIndicator: "%") if you don't want to use "$" as the indicator.
+let feeder = Feeder() // or Feeder(parameterIndicator: .percent) if you don't want to use "$" as the indicator.
 
 let params = [
     Feeder.Parameter(name: "some_string", value: Feeder.Value.string("some string")),
@@ -72,7 +74,7 @@ You can also format your functions as wanted:
 ```
 This boolean should be $some_bool(
     "$some_true_value(
-        "ye\";
+        "yes";
         "no"
     )";
     "$some_other_bool(
@@ -82,4 +84,11 @@ This boolean should be $some_bool(
 ).
 ```
 
-In an `if` clause you always have to provide both cases.
+You can define clauses without the double quots, but this will take control from you how the resulting string should look like. Let's say you have this user string:
+```
+Test String$test_bool(" Ja."; " Nein").     # Will result in "Test String Ja."
+Test String$test_bool( Ja; Nein).           # Will result in "Test StringJa."
+```
+
+In an `if` and `bool` clause you always have to provide both cases. Otherwise it's not recognized.
+
