@@ -1,58 +1,53 @@
-# StringFeeder
+# StringFeeder: Enhance Strings with Custom Scripting Features
 
-This code will give strings the potential to hold small and simple placeholder scripts. 
-You can use this for example if you want to give the user the possibility to define a template string that will then be filled and altered with given parameters and simple script like language.
+Welcome to StringFeeder! This tool empowers your strings with the ability to interpret small and straightforward placeholder scripts. You can leverage this for scenarios where users need to define a string template to be populated and modified with given parameters, using a simple script-like language.
 
-For example your app can provide this parameters:
+## Sample Usage
 
-```
+Here's an example of how your application might provide these parameters:
+
+```swift
 some_int: 12
 some_boolean: true
 some_string: "Hello World"
 some_converter: { (inputString) throws -> String in }
 ```
 
-Now the user can define a string entangling this placeholders like this for example:
-```
+Now, users can craft a string by incorporating these placeholders:
+
+```swift
 The int value of this is $some_int, the boolean is $some_boolean("correct"; "not correct") and I just want to say $some_string.
 ```
 
-The string will then be replaced with 
-```
+This would result in:
+
+```swift
 The int value of this is 12, the boolean is correct and I just want to say Hello World.
 ```
 
+## Placeholder Types
 
-## Supported Logic Placeholders
+StringFeeder supports a variety of placeholders:
 
-This placeholders are possible:
+- `$some_var`: Substitutes the value of the corresponding variable. For boolean values, it will be "true" or "false".
+- `$some_bool("true text"; "false text")`: Applicable only to boolean variables. Replaces this placeholder with either "true text" or "false text".
+- `$some_converter("converter input")`: Converts input using a function provided as a parameter to the feeder.
+- `$ifSet(field_name; "result if set"; "result if not set")`: Outputs the "result if set" if the field exists in the parameters.
+- `$ifNotSet(field_name; "result if not set"; "result if set")`: Outputs the "result if not set" if the field is missing in the parameters.
+- `$if(field_name; "result if true"; "result if false")`: Useful for boolean fields. Outputs "result if true" if the boolean field is true, and "result if false" otherwise.
+- Comments: Use `#` to comment until the end of the line, or end the comment with another `#`. Note that comments cannot span multiple lines and will not appear in the final string.
+- Escaping: Use a backslash (`\`) to escape characters. For example, `\$some_var` will be rendered as `$some_var` in the final string.
 
-- `$some_var`
-  Will be replaced by the value of the variable. In case of bool it will be "true" or "false".
-- `$some_bool("true text"; "false text")` 
-  Only for booleans. Will place "true text" or "false text" in the string.
-- `$some_converter("converter input")`
-  Converters can be seen as functions that are injected into the string by a logic passed to the feeder.
-- `$ifSet(field_name; "result if set"; "result if not set")`
-  The syntax is `ifSet([fieldname]; [trueOutput]; [falseOutput])`. Will return the true output if the field is existent in the parameters.
-- `$ifNotSet(field_name; "result if not set"; "result if set")`
-  The syntax is `ifNotSet([fieldname]; [trueOutput]; [falseOutput])`. Will return the true output if the field is not existent in the parameters.
-- `$if(field_name; "result if not set"; "result if set")`
-  The syntax is `if([fieldname]; [trueOutput]; [falseOutput])`. This is for checking booleans. If the field is not a boolean the clause is considered als false. 
-- Comments: A `#` will comment for the rest of the line. or you can end the comment with `#` again. Comments cannot contain multiple lines. Comments will not end in the final string.
-- Escaping: You can escape characters by placing a backslash before them. So for example `\$some_var` will end in the string as `$some_var` and will not be recognized as a placeholder and `\#` will not indicate a comment but rather end up as `#` in the string.
+## Quick Start Guide
 
-## How To
-
-It's very simple:
+To use StringFeeder:
 
 ```swift 
 import StringFeeder
 
-let feeder = Feeder() // or Feeder(parameterIndicator: .percent) if you don't want to use "$" as the indicator.
+let feeder = Feeder() // Alternatively, use Feeder(parameterIndicator: .percent) if you prefer to use "%" as the indicator.
 
 let params = [
-
     // A string value.
     Feeder.Parameter(name: "some_string", value: Feeder.Value.string("some string")),
     
@@ -60,32 +55,33 @@ let params = [
     Feeder.Parameter(name: "some-integer", value: Feeder.Value.integer(5)),
     
     // A boolean value.
-    Feeder.Parameter(name: "some_boolean", value: Feeder.Value.boolean(true))
+    Feeder.Parameter(name: "some_boolean", value: Feeder.Value.boolean(true)),
     
     // A converter.
     Feeder.Parameter(name: "some_converter", value Feeder.Value.converter({ origString in 
         return doWhateverNeeded(to: origString)
-    ))
+    }))
 ]
 
 let result = feeder.feed(parameters: params, into: userString)
-
 ```
 
-## Some Rules
+## Advanced Usage
 
-Combining placeholders is also possble, like this:
-```
+You can also combine and nest placeholders. Here are some examples:
+
+Combining placeholders:
+```swift
 This is $some_bool("$true_string"; "$false_string")
 ```
 
-Also nesting placeholders works:
-```
+Nesting placeholders:
+```swift
 This is $some_bool("$some_other_bool("yes"; "no")": "no")
 ```
 
-You can also format your functions as wanted:
-```
+You can format your functions as needed:
+```swift
 This boolean should be $some_bool(
     "$some_true_value(
         "yes";
@@ -98,18 +94,20 @@ This boolean should be $some_bool(
 ).
 ```
 
-You can define clauses without the double quots, but this will take control from you how the resulting string should look like. Let's say you have this user string:
+## Writing Effective Placeholders
+
+When writing placeholders, it's important to note the following:
+
+- You can define clauses without quotes, but this relinquishes control over how the resulting string will look. For example:
+```swift
+Test String$test_bool(" Ja."; " Nein").     # Results in "Test String Ja."
+Test String$test_bool( Ja; Nein).           # Results in "Test StringJa."
 ```
-Test String$test_bool(" Ja."; " Nein").     # Will result in "Test String Ja."
-Test String$test_bool( Ja; Nein).           # Will result in "Test StringJa."
-```
+- Always provide both cases for `if` and `bool` clauses. If not, they won't be recognized.
 
-In an `if` and `bool` clause you always have to provide both cases. Otherwise it's not recognized.
+## Examples
 
-## Examples:
-
-### Filling an email template:
-
+Fill an email template:
 ```
 Dear $name,
 
@@ -121,20 +119,20 @@ Your Customer Support
 $should_show_ad(" # will show an add if should show add is set to true.
 Have you heard about our new product?
 "; "")
-
+```
+```swift
 parameters: [
     Feeder.Parameter(name: "name", value: .string("John Doe")),
     Feeder.Parameter(name: "order_number", value: .integer(12345654321)),
     Feeder.Parameter(name: "should_show_ad", value: .boolean(true))
 ]
-
 ```
 
-### Filling a url template:
-
+Fill a URL template:
 ```
 https://some.api.com/api/v$version/users/$user_id/items/?searchstring=$url_encoded("$search_string")
-
+```
+```swift
 let params = [
     Feeder.Parameter(name: "version", value: .integer(3)),
     Feeder.Parameter(name: "user_id", value: .string("someUserId")),
@@ -144,6 +142,6 @@ let params = [
             throw SomeError()
         }
         return encoded
-    })
+    }))
 ]
 ```
