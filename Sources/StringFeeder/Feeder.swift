@@ -261,3 +261,39 @@ public class Feeder {
         }
     }
 }
+
+extension Feeder.Value: Equatable {
+    public static func == (lhs: Feeder.Value, rhs: Feeder.Value) -> Bool {
+        switch (lhs, rhs) {
+        case let (.string(a), .string(b)):
+            return a == b
+        case let (.boolean(a), .boolean(b)):
+            return a == b
+        case let (.integer(a), .integer(b)):
+            return a == b
+        case (.converter, .converter):
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+extension Feeder.Parameter: Hashable {
+    public static func == (lhs: StringFeeder.Feeder.Parameter, rhs: StringFeeder.Feeder.Parameter) -> Bool {
+        lhs.name == rhs.name && lhs.value == rhs.value
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+        switch self.value {
+        case let .string(value):
+            hasher.combine(value)
+        case let .boolean(value):
+            hasher.combine(value)
+        case let .integer(value):
+            hasher.combine(value)
+        default: break
+        }
+    }
+}
